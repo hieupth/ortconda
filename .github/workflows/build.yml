@@ -1,0 +1,31 @@
+name: Package
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    name: Build package
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        version: [1.18.0]
+        openvino: [true, false]
+        include:
+          - os: ubuntu-latest
+            target-platform: linux-64
+          - openvino: false
+            openvino_hardware: CPU
+    env:
+      version: ${{matrix.version}}
+      openvino: ${{matrix.openvino}}
+      openvino_hardware: ${{matrix.openvino_hardware}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build conda package
+      uses: prefix-dev/rattler-build-action@v0.2.9
+      with:
+        recipe-path: conda/recipe.github.yaml
+        build-args: -c nvidia -c conda-forge
