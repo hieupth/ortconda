@@ -11,16 +11,20 @@ jobs:
     strategy:
       matrix:
         version: [1.18.0]
-        openvino: [true, false]
+        openvino: [false, true]
+        openvino_hardware: [CPU]
+        cuda: [false, true]
+        cuda_version: [11.8]
         include:
           - os: ubuntu-latest
             target-platform: linux-64
-          - openvino: false
-            openvino_hardware: CPU
     env:
-      version: ${{matrix.version}}
-      openvino: ${{matrix.openvino}}
-      openvino_hardware: ${{matrix.openvino_hardware}}
+      BUILD_ORT_VERSION: ${{matrix.version}}
+      BUILD_ORT_OPENVINO: ${{matrix.openvino}}
+      BUILD_ORT_OPENVINO_HARDWARE: ${{matrix.openvino_hardware}}
+      BUILD_ORT_CUDA: ${{matrix.cuda}}
+      BUILD_ORT_CUDA_VERSION: ${{matrix.cuda_version}}
+      BUILD_ORT_DISABLE_TYPES: "float8"
     steps:
     - name: Checkout
       uses: actions/checkout@v4

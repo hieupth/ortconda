@@ -1,12 +1,11 @@
 context:
   name: libonnxruntime
-  version: ${{env.get("version")}}
-  openvino: ${{env.get("openvino")}}
-  openvino_hardware: ${{env.get("openvino_hardware")}}
-  cuda: true
-  cuda_version: 11.8
-  cuda_arch: "75;80;86"
-  disable_types: float8
+  version: ${{env.get("BUILD_ORT_VERSION")}}
+  openvino: ${{env.get("BUILD_ORT_OPENVINO")}}
+  openvino_hardware: ${{env.get("BUILD_ORT_OPENVINO_HARDWARE")}}
+  cuda: ${{env.get("BUILD_ORT_CUDA")}}
+  cuda_version: ${{env.get("BUILD_ORT_CUDA_VERSION")}}
+  disable_types: ${{env.get("BUILD_ORT_DISABLE_TYPES")}}
 
 package:
   name: ${{ name|lower }}
@@ -27,10 +26,10 @@ build:
       CMAKE_INSTALL_PREFIX=$PREFIX \
       CMAKE_CUDA_ARCHITECTURES=${{cuda_arch}}
     "
-    if [ ${{openvino}} ]; then 
+    if [ "${{openvino}}" == "true" ]; then 
       build_args="$build_args --use_openvino ${{openvino_hardware}}"; 
     fi;
-    if [ ${{cuda}} ]; then
+    if [ "${{cuda}}" == "true" ]; then
       export CPATH=${CONDA_PREFIX}/include:${CPATH}
       export LD_LIBRARY_PATH=${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
       build_args="$build_args --use_cuda --cuda_version ${{cuda_version}}"
@@ -56,18 +55,18 @@ requirements:
     - cmake
     - numpy
     - gtest
+    - patchelf
     - packaging
     - libabseil
     - libprotobuf<4
     - flatbuffers~=23.5
     - if: linux
       then:
-        - patchelf
         - sysroot_${{build_platform}}>=2.14
-    - if: openvino
+    - if: openvino == true
       then:
-        - openvino
-    - if: cuda
+        openvino
+    - if: cuda == true
       then:
         - gcc=10
         - gxx=10
@@ -79,10 +78,3 @@ requirements:
         - cuda-libraries-dev~=${{cuda_version}}
   run:
     - cmake
-    - if: openvino
-      then:
-        - openvino
-    - if: cuda
-      then:
-        - cudnn
-        - cudatoolkit~=${{cuda_version}}
